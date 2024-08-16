@@ -31,6 +31,12 @@ The application is organized using the Clean Architecture pattern. Here is the f
 
 ## Core Functionalities
 
+## Database Schema
+
+The database schema is represented in the following Entity-Relationship Diagram (ERD):
+
+![ERD Diagram](Database%20Schema.PNG)
+
 ### Backend
 
 The backend consists of three controllers to handle entities and tasks:
