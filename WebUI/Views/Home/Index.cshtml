@@ -11,7 +11,7 @@
     {
         foreach (var task in Model)
         {
-            <li>@task.Title - @task.Status</li>
+            <li>Task: @task.Title - Assigned to User: @task.UserId</li>
         }
     }
     else
@@ -19,6 +19,7 @@
         <li>No tasks found.</li>
     }
 </ul>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
 <script>
@@ -28,29 +29,44 @@
         .build();
 
     // Function to append task to the list
-    function addTaskToList(task) {
+    function addTaskToList(taskTitle, userId) {
         const taskList = document.getElementById("taskList");
         const li = document.createElement("li");
-        li.textContent = `${task.title} - ${task.status}`;
+        li.textContent = `Task: ${taskTitle} - Assigned to User: ${userId}`;
         taskList.appendChild(li);
     }
 
-    // Function to load tasks from the server
+    // Function to load tasks from the server (if needed)
     async function loadTasks() {
-        const response = await fetch('/api/task');
-        const tasks = await response.json();
-        tasks.forEach(task => addTaskToList(task));
+        try {
+            const response = await fetch('/api/task/status/Pending'); // Adjust as needed
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const tasks = await response.json();
+            const taskList = document.getElementById("taskList");
+
+            // Clear current tasks
+            taskList.innerHTML = '';
+
+            // Add new tasks
+            tasks.forEach(task => {
+                addTaskToList(task.title, task.userId); // Adjust if your DTO includes these fields
+            });
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+        }
     }
 
     // Handle task updates from the server
-    connection.on("ReceiveTaskUpdate", function (message) {
-        alert(message);
-        loadTasks(); // Reload tasks to update the list
+    connection.on("ReceiveTaskUpdate", function (data) {
+        addTaskToList(data.title, data.userId);
     });
 
     // Start the connection and load tasks
     connection.start().then(function () {
-        loadTasks();
+        loadTasks(); // Initial load of tasks if needed
     }).catch(function (err) {
         console.error(err.toString());
     });

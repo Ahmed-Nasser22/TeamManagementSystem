@@ -15,8 +15,11 @@ namespace WebUI.EventHandlers
 
         public async Task Handle(TaskAssignedEvent eventMessage)
         {
-            await _hubContext.Clients.User(eventMessage.UserId.ToString())
-                .SendAsync("ReceiveTaskUpdate", $"New task assigned: {eventMessage.TaskTitle}");
+            await _hubContext.Clients.All.SendAsync("ReceiveTaskUpdate", new
+            {
+                title = eventMessage.TaskTitle,
+                userId = eventMessage.UserId
+            });
         }
     }
 }
