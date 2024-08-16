@@ -1,6 +1,9 @@
 ﻿using Application.DTOs;
-using AutoMapper;
+using Application.Events;
+using Core.Entities;
+using Core.Enums;
 using Core.Interfaces;
+using AutoMapper;
 
 namespace Application.Services
 {
@@ -8,14 +11,22 @@ namespace Application.Services
     {
         private readonly ITaskRepository _taskRepository;
         private readonly IMapper _mapper;
+        private readonly IEventHandler<TaskAssignedEvent> _taskAssignedEventHandler;
+        private readonly IEventHandler<TaskStatusUpdatedEvent> _taskStatusUpdatedEventHandler;
 
-        public TaskService(ITaskRepository taskRepository, IMapper mapper)
+        public TaskService(
+            ITaskRepository taskRepository,
+            IMapper mapper,
+            IEventHandler<TaskAssignedEvent> taskAssignedEventHandler,
+            IEventHandler<TaskStatusUpdatedEvent> taskStatusUpdatedEventHandler)
         {
             _taskRepository = taskRepository;
             _mapper = mapper;
+            _taskAssignedEventHandler = taskAssignedEventHandler;
+            _taskStatusUpdatedEventHandler = taskStatusUpdatedEventHandler;
         }
 
-        public async Task<TaskDto> GetTaskByIdAsync(Guid id)
+        public async Task<TaskDto> GetTaskByIdAsync(int id)
         {
             var task = await _taskRepository.GetByIdAsync(id);
             return _mapper.Map<TaskDto>(task);
@@ -31,15 +42,17 @@ namespace Application.Services
         {
             var task = _mapper.Map<Core.Entities.Task>(taskDto);
             await _taskRepository.AddAsync(task);
+            await _taskAssignedEventHandler.Handle(new TaskAssignedEvent(task.UserId, task.Title));
         }
 
-        public async System.Threading.Tasks.Task UpdateTaskStatusAsync(Guid taskId, Core.Enums.TaskStatus status)
+        public async System.Threading.Tasks.Task UpdateTaskStatusAsync(int taskId, Core.Enums.TaskStatus status)
         {
             var task = await _taskRepository.GetByIdAsync(taskId);
             if (task != null)
             {
                 task.Status = status;
                 await _taskRepository.UpdateAsync(task);
+                await _taskStatusUpdatedEventHandler.Handle(new TaskStatusUpdatedEvent(task.UserId, task.Title, status.ToString()));
             }
         }
     }

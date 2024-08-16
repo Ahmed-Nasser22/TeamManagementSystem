@@ -4,7 +4,7 @@ namespace Application.Services
 {
     public interface IActivityService
     {
-        Task<ActivityDto> GetActivityByIdAsync(Guid id);
+        Task<ActivityDto> GetActivityByIdAsync(int id);
         Task<IEnumerable<ActivityDto>> GetAllActivitiesAsync();
         Task AddActivityAsync(ActivityDto activityDto);
     }

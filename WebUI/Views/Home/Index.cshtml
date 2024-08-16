@@ -1,8 +1,57 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<Application.DTOs.TaskDto>
+
+@{
+    ViewData["Title"] = "Task Management";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1>@ViewData["Title"]</h1>
+
+<ul id="taskList">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var task in Model)
+        {
+            <li>@task.Title - @task.Status</li>
+        }
+    }
+    else
+    {
+        <li>No tasks found.</li>
+    }
+</ul>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+<script>
+    // Connect to the SignalR hub
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/taskHub")
+        .build();
+
+    // Function to append task to the list
+    function addTaskToList(task) {
+        const taskList = document.getElementById("taskList");
+        const li = document.createElement("li");
+        li.textContent = `${task.title} - ${task.status}`;
+        taskList.appendChild(li);
+    }
+
+    // Function to load tasks from the server
+    async function loadTasks() {
+        const response = await fetch('/api/task');
+        const tasks = await response.json();
+        tasks.forEach(task => addTaskToList(task));
+    }
+
+    // Handle task updates from the server
+    connection.on("ReceiveTaskUpdate", function (message) {
+        alert(message);
+        loadTasks(); // Reload tasks to update the list
+    });
+
+    // Start the connection and load tasks
+    connection.start().then(function () {
+        loadTasks();
+    }).catch(function (err) {
+        console.error(err.toString());
+    });
+</script>

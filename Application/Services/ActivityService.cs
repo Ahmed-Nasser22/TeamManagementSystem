@@ -16,7 +16,7 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<ActivityDto> GetActivityByIdAsync(Guid id)
+        public async Task<ActivityDto> GetActivityByIdAsync(int id)
         {
             var activity = await _activityRepository.GetByIdAsync(id);
             return _mapper.Map<ActivityDto>(activity);

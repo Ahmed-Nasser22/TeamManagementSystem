@@ -5,9 +5,9 @@ namespace Application.Services
 {
     public interface ITaskService
     {
-        Task<TaskDto> GetTaskByIdAsync(Guid id);
+        Task<TaskDto> GetTaskByIdAsync(int id);
         Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(Core.Enums.TaskStatus status);
         Task AddTaskAsync(TaskDto taskDto);
-        Task UpdateTaskStatusAsync(Guid taskId, Core.Enums.TaskStatus status);
+        Task UpdateTaskStatusAsync(int taskId, Core.Enums.TaskStatus status);
     }
 }
